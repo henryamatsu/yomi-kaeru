@@ -1,0 +1,84 @@
+<!-- <div class="button-row">
+    <button id="sample-text-button">Sample Text</button>
+    <button id="translate-button">Translate!</button>
+</div>
+ -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Yomi Kaeru</title>
+	<link
+	  rel="icon"
+	  type="image/svg"
+	  href="/imgs/frog-soup-square.svg"
+	/>
+	<link rel="stylesheet" href="/css/reset.css" />
+	<link rel="stylesheet" href="/css/theme-default.css" />
+	<link rel="stylesheet" href="/css/style.css" /></head>
+<body>
+	<header>
+		<div class="content">
+			<a class="home-link" href="/">
+				<div class="img-wrapper">
+          <div class="img-filter"></div>
+					<img src="../imgs/frog-soup-square.svg" alt="frog-icon"/>
+				</div>
+				<h1>yomi-kaeru 読み替える</h1>
+			</a>
+      <a href="/logout"><button class="primary-button">DOWNLOAD</button></a>
+      <a href="/logout"><button>LOGOUT</button></a>
+		</div>
+	</header>
+	<main>
+		<div class="content">
+      <div class="profile-row">
+        <section class="preference-controls">
+          <form method="post" onsubmit="return false;">
+            <!-- <input type="hidden" name="_id" value="<%= //user._id %>"> -->
+            <label class="checkbox-row" for="grade-1">
+              <span>Grade 1</span>
+              <div class="form-line"></div>
+              <input id="grade-1" name="grade-1" type="checkbox" value=true <%= preferences.grades.grade1 ? "checked" : "" %>>
+            </label>
+            <label class="checkbox-row" for="grade-2">
+              <span>Grade 2</span>
+              <div class="form-line"></div>
+              <input id="grade-2" name="grade-2" type="checkbox" value=true <%= preferences.grades.grade2 ? "checked" : "" %>>
+            </label>
+            <label class="checkbox-row" for="grade-3">
+              <span>Grade 3</span>
+              <div class="form-line"></div>
+              <input id="grade-3" name="grade-3" type="checkbox" value=true <%= preferences.grades.grade3 ? "checked" : "" %>>
+            </label>
+            <div class="frequency-container">
+              <label for="frequency">Replacement Frequency</label>
+              <input id="frequency" name="frequency" type="range" value=<%= preferences.frequency %>>
+            </div>
+            <button id="save-button" class="primary-button">Save</button>
+            <button id="translate-button">Translate</button>
+            <button id="sample-text-button">Sample Text</button>
+          </form>
+        </section>
+        <section class="text-container">
+          <div class="text-display" class="text-box"></div>
+          <textarea class="text-input" class="text-box" placeholder="Insert text here!" maxlength="2011"></textarea>    
+        </section>
+      </div>
+    </div>
+  </main>
+  <div id="info-popup">
+    <div class="popup-content">
+        <span>English: <span id="english-reading"></span></span>
+        <span>Hiragana: <span id="hiragana-reading"></span></span>
+    </div>
+  </div>
+  <script>
+    window.preferences = <%- JSON.stringify(preferences) %>;
+  </script>
+  <script src="js/profile.js"></script>
+  </body>
+  </html>

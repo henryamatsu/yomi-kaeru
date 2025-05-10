@@ -1,0 +1,21 @@
+<%- include('partials/landingPageTop') -%>
+<section>
+  <% if (locals.messages.errors) { %>
+    <% messages.errors.forEach( e => { %>
+      <div class="error-message"><%= e.msg %></div>
+    <% }) %>
+  <% } %>
+  <% if (locals.messages.info) { %>
+    <% messages.info.forEach( e => { %>
+      <div class="error-message"><%= e.msg %></div>
+    <% }) %>
+  <% } %>
+  <form class="login-signup-form" action="/login" method="POST">
+    <label for="email-input">Email address</label>
+    <input id="email-input" type="email" name="email"/>
+    <label for="password-input">Password</label>
+    <input id="password-input" type="password" name="password"/>
+    <button type="submit">Login</button>
+  </form>
+</section>
+<%- include('partials/landingPageBottom') -%>

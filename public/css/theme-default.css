@@ -1,0 +1,188 @@
+* {
+    margin: 0;
+
+    --color-1: hsl(156, 87%, 18%);
+    --color-1-bg: hsl(from var(--color-1) h s 90%);
+    --color-1-d: hsl(from var(--color-1) h s 9%);
+
+    --color-2: hsl(10, 84%, 44%);
+    --color-2-bg: hsl(from var(--color-2) h s 95%);
+    --color-2-d: hsl(from var(--color-2) h s 22%);
+}
+
+*:focus-visible {
+    outline: 1px solid var(--color-1);
+}
+
+html, body {
+    height: 100%;
+}
+html {
+    font-size: 62.5%;
+    font-family: Arial, Helvetica, sans-serif;
+}
+body {
+    margin: 0;
+    font-size: 1.6rem;
+    background: var(--color-1-bg);
+    color: var(--color-1);
+}
+
+a {
+    color: var(--color-2);
+    text-decoration: none;
+}
+
+.text-flow *+* {
+    margin-top: 10px;
+}
+
+/* inputs */
+
+input,
+textarea,
+select {
+    border: 2px solid var(--color-1);
+    border-radius: 5px;
+    padding: 5px 10px;
+    background: hsl(from var(--color-1) h s 97%);
+    color: var(--color-1);
+    font-family: inherit;
+}
+input::placeholder,
+textarea::placeholder {
+    color: inherit;
+}
+
+/* buttons */
+
+button {
+    border: 2px solid var(--color-1);
+    border-radius: 5px;
+    padding: 5px 10px;
+    background: var(--color-1-bg);
+    color: var(--color-1);
+    cursor: pointer;
+}
+
+/* false-shadow */
+
+.false-shadow {
+    --shadow-offset: 10px;
+    position: relative;
+    border: none;
+    padding: var(--shadow-offset);
+    transition: padding 0.2s;
+    z-index: 0;
+}
+
+/* background (before) and foreground (after) */
+.false-shadow::before,
+.false-shadow::after
+{
+    content: "";
+    position: absolute;
+    inset: 0;
+    isolation: isolate;
+    z-index: -1;
+    border: var(--shadow-border); /* no default value for --shadow-border */
+    border-radius: inherit;
+    background-color: var(--color-1-bg);
+    transition: transform 0.2s, background-color 1s;
+}
+
+.false-shadow,
+.false-shadow.hoverable:hover,
+.false-shadow.clickable
+{
+    padding: calc(var(--shadow-offset) * 2);
+    padding-left: 0;
+    padding-top: 0;
+}
+
+.false-shadow.hoverable,
+.false-shadow.clickable:active {
+    padding: var(--shadow-offset);
+}
+
+.false-shadow::before,
+.false-shadow.hoverable:hover::before,
+.false-shadow.clickable::before
+{
+    transform: translate(var(--shadow-offset), var(--shadow-offset));
+}
+
+.false-shadow::after,
+.false-shadow.hoverable:hover::after,
+.false-shadow.clickable::after {
+    transform: translate(calc(-1 * var(--shadow-offset)), calc(-1 * var(--shadow-offset)));
+}
+
+.false-shadow.hoverable::before,
+.false-shadow.clickable:active::before
+{
+    transform: translate(0,0);
+    background-color: var(--color-1);
+}
+
+.false-shadow.hoverable::after,
+.false-shadow.clickable:active::after
+{
+    transform: translate(0,0);
+}
+
+.solid-shadow::before {
+    background: var(--color-1);
+}
+
+.line-shadow::before {
+    opacity: 0.8;
+    background-size: 10px 10px;
+    background-image: repeating-linear-gradient(45deg, var(--color-1) 0, var(--color-1) 1px, transparent 0, transparent 50%);
+}
+
+.dot-shadow::before {
+    opacity: 0.8;
+    background-size: 10px 10px;
+    background-image: radial-gradient(var(--color-1) 2px, transparent 2px);
+}
+
+/* fade-in */
+
+.loadable {
+    opacity: 0;
+    transition: opacity 1s;
+}
+.loaded {
+    opacity: 1;
+}
+
+/* scrollbar */
+
+::-webkit-scrollbar {
+    margin: 5px 0;
+    width: 10px;
+    border-radius: 10px;
+
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(from var(--color-1) h s l / 80%);
+    border-radius: 8px;
+    border: 3.5px solid transparent;
+    background-clip: content-box;
+    transition: border .4s, background-color .4s;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-1);
+    border: 3px solid transparent;
+    opacity: 1;
+  }
+
+/* misc */
+
+.inverted {
+    background: var(--color-1);
+    color: var(--color-1-bg);
+}
