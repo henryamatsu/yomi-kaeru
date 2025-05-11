@@ -8,7 +8,6 @@ module.exports = {
     const user = await User.findById(req.user._id);
     const preferences = user.preferences;
     res.render("profile.ejs", {
-      // user: req.user,
       preferences
     });
   }

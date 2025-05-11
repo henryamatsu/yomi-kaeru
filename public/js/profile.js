@@ -9,7 +9,7 @@ class Translator {
       this.setupQuerySelectors();
       this.setupEventListeners();
 
-      this.createTranslationMap();  
+      this.createTranslationMap();
     }
   
     setupQuerySelectors() {
@@ -33,31 +33,56 @@ class Translator {
       this.infoPopup.addEventListener("click", this.changeReading.bind(this));
       
     }
-  
+
+    // translate map v2
     async createTranslationMap() {
       const grades = this.preferences.grades;
-      let allData = [];
+      let allData = {};
   
       if (grades.grade1) {
-        const res = await fetch("/json/grade1.json");
+        const res = await fetch("/json/grade1Map.json");
         const data = await res.json();  
-        allData = [...allData, ...data];
+        allData = {...allData, ...data};
       }
       if (grades.grade2) {
-        const res = await fetch("/json/grade2.json");
+        const res = await fetch("/json/grade2Map.json");
         const data = await res.json();  
-        allData = [...allData, ...data];
+        allData = {...allData, ...data};
       }
       if (grades.grade3) {
-        const res = await fetch("/json/grade3.json");
+        const res = await fetch("/json/grade3Map.json");
         const data = await res.json();  
-        allData = [...allData, ...data];
+        allData = {...allData, ...data};
       }
       
-      allData.forEach(entry => {
-        this.translationMap[entry.heisig_en] = entry;
-      });
+      this.translationMap = allData;
     }
+
+    // translate map v1
+    // async createTranslationMap() {
+    //   const grades = this.preferences.grades;
+    //   let allData = [];
+  
+    //   if (grades.grade1) {
+    //     const res = await fetch("/json/grade1.json");
+    //     const data = await res.json();  
+    //     allData = [...allData, ...data];
+    //   }
+    //   if (grades.grade2) {
+    //     const res = await fetch("/json/grade2.json");
+    //     const data = await res.json();  
+    //     allData = [...allData, ...data];
+    //   }
+    //   if (grades.grade3) {
+    //     const res = await fetch("/json/grade3.json");
+    //     const data = await res.json();  
+    //     allData = [...allData, ...data];
+    //   }
+      
+    //   allData.forEach(entry => {
+    //     this.translationMap[entry.heisig_en] = entry;
+    //   });
+    // }
   
     handlePrefenceInput(event) {
       let value = event.target.value;
@@ -122,20 +147,90 @@ class Translator {
   
       this.translateEligibleWords();
     }
-  
+
+    // translate v2
     async translateEligibleWords() {
+      // in theory, this design should be pretty easy to port over to translating multiple text elements
       const text = this.textDisplay.innerText;
-      const textArr = text.split(" ");
-  
-      const translatedArr = textArr.map(word => {
-        const replacementChance = Math.round(Math.random() * 100) < +this.preferences.frequency;
-  
-        return this.translationMap[word] && replacementChance ? `<span class="translated-word" data-key="${word}">${this.translationMap[word].kanji}</span>` : word;
+
+      // split the text element into sentences based on punctuation marks
+      let sentenceArr = text.split(/([.!?]+)/);
+
+      // reattach the punctuation marks
+      sentenceArr = sentenceArr.reduce((acc, e, i) => {
+        if (i % 2 == 0) {
+          return [...acc, e]
+        }
+        else {
+          acc[acc.length - 1] += e;
+          return acc;
+        }
+      }, []);
+    
+      // this array will store the data that we send to gemini
+      let eligibleArr = [];
+
+      sentenceArr.forEach((sentence, i) => {
+        // split each sentence into words
+        const wordArr = sentence.split(/([^a-zA-Z\d]+)/);
+        // store each English word - Japanese kanji pair
+        const wordPairs = [];
+
+        // testing not sending the kanji
+        const eligibleWords = [];
+
+        wordArr.forEach(word => {
+          // roll to see if we're going to attempt to replace this word
+          const replacementChance = Math.round(Math.random() * 100) < +this.preferences.frequency;
+
+          // if the word is in the map and we rolled under the replacement threshold, we'll add it to the wordPairs array
+          if (this.translationMap[word] && replacementChance) {
+            wordPairs.push([word, this.translationMap[word]]);
+            eligibleWords.push(word);
+          }
+        });
+
+        // we build an object with data that gemini will need to make the translation
+        const eligibleData = {
+          eligibleWords,
+          sentence,
+          sentenceIndex: i // this is so we can find and replace the original sentence after translation
+        } 
+
+        eligibleArr.push(eligibleData);
       });
-      // might need regex to deal with words with punctuation attached/ words with spaces in between
+
+      // remove entries for sentences with 0 translation-eligible words
+      eligibleArr = eligibleArr.filter(e => e.eligibleWords.length > 0);
+
+      // limit size for testing
+      eligibleArr = eligibleArr.slice(0, 5);
+
+      // console.log(JSON.stringify(eligibleArr));
   
-      this.textDisplay.innerHTML = translatedArr.join(" ");
+      const geminiData = await fetch("/translation?_method=GET", {
+        method: "post",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(eligibleArr)
+      });
+
+      console.log(geminiData);
     }
+
+    // translate v1
+    // async translateEligibleWords() {
+    //   const text = this.textDisplay.innerText;
+    //   const textArr = text.split(" ");
+  
+    //   const translatedArr = textArr.map(word => {
+    //     const replacementChance = Math.round(Math.random() * 100) < +this.preferences.frequency;
+  
+    //     return this.translationMap[word] && replacementChance ? `<span class="translated-word" data-key="${word}">${this.translationMap[word].kanji}</span>` : word;
+    //   });
+    //   // might need regex to deal with words with punctuation attached/ words with spaces in between
+  
+    //   this.textDisplay.innerHTML = translatedArr.join(" ");
+    // }
   
     returnToInput() {
       this.textType = "input";
