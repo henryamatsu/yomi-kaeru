@@ -1,4 +1,12 @@
 # MVP Development
+- aesthetic popup
+- loading icon
+- swapping between japanese, english, romaji
+- popup windows on homescreen
+- BROWSER EXTENSION
+- move JSON data to database so it's easier to access from browser extension?
+- download button?
+
 - √ find charactersets to insert into db (maybe create for 2-3 first tiers)
 - √ create html display where you can insert text and have it turned into html with translations
 - √ find words throughout text and translate + highlight + insert into span (hover window can come later)

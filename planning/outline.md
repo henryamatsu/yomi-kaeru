@@ -1,27 +1,27 @@
 # Views
 - homepage
-    - blurb explaining product
+    - √ blurb explaining product
     - translation demo (read more below)
-    - account creation
+    - √ account creation
     - download button
-- login/signup
-- Account page
-    - wordset preferences
-    - replacement frequency
-    - learning progress
+- √ login/signup
+- √ Account page
+    - √ wordset preferences
+    - √ replacement frequency
+    - learning progress (not going to implement in this version)
         - grid with characters in a given tier, color coded to indicate mastery
-    - personalized translation demo
+    - √ personalized translation demo
 
 ## Database
-    - Wordbank 
+    - √ Wordbank 
         - create different wordbank tiers (can start with just first tier)
-    - Users
+    - √ Users
         - track setting preferences
         - track learning progress
 
 ## Translation demo
-    - paste text, converts to html
-    - scan html for eligible words to translate
+    - √ paste text, converts to html
+    - √ scan html for eligible words to translate
     - SANITIZE HTML with library
     - hover over word for popup window. Mark as remembered or forgotten, see translation, get more info
     - tabbing functionality? We have to better understand how users might normally use tab so we don't create conflicts with default behavior

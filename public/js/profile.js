@@ -2,14 +2,16 @@ class Translator {
     constructor() {
       this.preferences = window.preferences;
 
-      this.translationMap = {};
       this.textType = "input";
       this.currentWordElement = null;
+
+      // this will store data for every translated word
+      this.translationReference = [];
   
       this.setupQuerySelectors();
       this.setupEventListeners();
 
-      this.createTranslationMap();
+      this.createTranslationSets();
     }
   
     setupQuerySelectors() {
@@ -34,55 +36,45 @@ class Translator {
       
     }
 
-    // translate map v2
-    async createTranslationMap() {
+    async createTranslationSets() {
       const grades = this.preferences.grades;
-      let allData = {};
-  
+      const newEligibleSet = new Set();
+      const newKanjiSet = new Set();
+      
       if (grades.grade1) {
-        const res = await fetch("/json/grade1Map.json");
-        const data = await res.json();  
-        allData = {...allData, ...data};
+        const eligibleRes = await fetch("/json/eligible1.json");
+        const eligibleData = await eligibleRes.json();
+
+        const kanjiRes = await fetch("/json/kanji1.json");
+        const kanjiData = await kanjiRes.json();  
+
+        eligibleData.forEach(e => newEligibleSet.add(e));
+        kanjiData.forEach(e => newKanjiSet.add(e));
       }
       if (grades.grade2) {
-        const res = await fetch("/json/grade2Map.json");
-        const data = await res.json();  
-        allData = {...allData, ...data};
+        const eligibleRes = await fetch("/json/eligible2.json");
+        const eligibleData = await eligibleRes.json();
+
+        const kanjiRes = await fetch("/json/kanji2.json");
+        const kanjiData = await kanjiRes.json();  
+
+        eligibleData.forEach(e => newEligibleSet.add(e));
+        kanjiData.forEach(e => newKanjiSet.add(e));
       }
       if (grades.grade3) {
-        const res = await fetch("/json/grade3Map.json");
-        const data = await res.json();  
-        allData = {...allData, ...data};
+        const eligibleRes = await fetch("/json/eligible3.json");
+        const eligibleData = await eligibleRes.json();
+
+        const kanjiRes = await fetch("/json/kanji3.json");
+        const kanjiData = await kanjiRes.json();  
+
+        eligibleData.forEach(e => newEligibleSet.add(e));
+        kanjiData.forEach(e => newKanjiSet.add(e));
       }
       
-      this.translationMap = allData;
+      this.eligibleSet = newEligibleSet;
+      this.kanjiSet = newKanjiSet;
     }
-
-    // translate map v1
-    // async createTranslationMap() {
-    //   const grades = this.preferences.grades;
-    //   let allData = [];
-  
-    //   if (grades.grade1) {
-    //     const res = await fetch("/json/grade1.json");
-    //     const data = await res.json();  
-    //     allData = [...allData, ...data];
-    //   }
-    //   if (grades.grade2) {
-    //     const res = await fetch("/json/grade2.json");
-    //     const data = await res.json();  
-    //     allData = [...allData, ...data];
-    //   }
-    //   if (grades.grade3) {
-    //     const res = await fetch("/json/grade3.json");
-    //     const data = await res.json();  
-    //     allData = [...allData, ...data];
-    //   }
-      
-    //   allData.forEach(entry => {
-    //     this.translationMap[entry.heisig_en] = entry;
-    //   });
-    // }
   
     handlePrefenceInput(event) {
       let value = event.target.value;
@@ -108,15 +100,13 @@ class Translator {
     }
 
     async handleSaveButton() {
-      this.createTranslationMap();
+      this.createTranslationSets();
 
       fetch("/preferences", {
         method: "put",
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(this.preferences)
       });
-
- 
     }
 
     async handleSampleTextButton() {
@@ -135,7 +125,7 @@ class Translator {
       }
     }
   
-    convertInputText() {
+    async convertInputText() {
       this.textType = "display";
       
       this.translateButton.innerText = "New Translation";
@@ -145,19 +135,56 @@ class Translator {
   
       this.textDisplay.innerText = this.textInput.value;
   
-      this.translateEligibleWords();
+      this.textDisplay.innerHTML = await this.translateEligibleWords();
     }
 
     // translate v2
     async translateEligibleWords() {
       // in theory, this design should be pretty easy to port over to translating multiple text elements
+      // maybe for multiple elements, this method will be called for each individual method? Or
+      // we should amass the text so we can make one call to gemini api
       const text = this.textDisplay.innerText;
 
+      const sentencesArr = this.createSentencesArr(text);
+      const sentenceWordsArr = this.createSentenceWordsArr(sentencesArr);
+    
+      const geminiInput = this.createGeminiInput(sentencesArr, sentenceWordsArr);
+
+      // console.log(JSON.stringify(geminiInput));
+  
+      const geminiRes = await fetch("/translation?_method=GET", {
+        method: "post",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(geminiInput)
+      });
+
+      const geminiOutput = await geminiRes.json();
+
+      // checking to see if filtering is working
+      // console.log("unfiltered");
+      // console.log(geminiOutput);
+      // console.log("unfiltered length: ", geminiOutput.length);
+
+      const filteredGeminiOutput = this.filterGeminiOutput(geminiOutput);
+
+      // console.log("filtered");
+      // console.log(filteredGeminiOutput);
+      // console.log("filtered length: ", filteredGeminiOutput.length);
+
+
+      const newSentenceWordsArr = this.swapInTranslatedSentences(sentenceWordsArr, filteredGeminiOutput);
+      const newSentencesArr = newSentenceWordsArr.map(arr => arr.join(""));
+      const newText = newSentencesArr.join("");
+      
+      return newText;
+    }
+
+    createSentencesArr(text) {
       // split the text element into sentences based on punctuation marks
-      let sentenceArr = text.split(/([.!?]+)/);
+      let sentencesArr = text.split(/([.!?]+)/);
 
       // reattach the punctuation marks
-      sentenceArr = sentenceArr.reduce((acc, e, i) => {
+      sentencesArr = sentencesArr.reduce((acc, e, i) => {
         if (i % 2 == 0) {
           return [...acc, e]
         }
@@ -166,72 +193,95 @@ class Translator {
           return acc;
         }
       }, []);
-    
-      // this array will store the data that we send to gemini
-      let eligibleArr = [];
 
-      sentenceArr.forEach((sentence, i) => {
+      return sentencesArr;
+    }
+
+    createSentenceWordsArr(sentencesArr) {
+      const sentenceWordsArr = sentencesArr.map(sentence => {
         // split each sentence into words
-        const wordArr = sentence.split(/([^a-zA-Z\d]+)/);
-        // store each English word - Japanese kanji pair
-        const wordPairs = [];
+        return sentence.split(/([^a-zA-Z\d]+)/);
+      });
 
-        // testing not sending the kanji
+      return sentenceWordsArr;
+    }
+
+    createGeminiInput(sentencesArr, sentenceWordsArr) {
+      // this array will store the data that we send to gemini
+      let inputArr = [];
+
+      sentenceWordsArr.forEach((wordsArr, sentenceIndex) => {
+        // store all eligible words
         const eligibleWords = [];
 
-        wordArr.forEach(word => {
+        wordsArr.forEach((word, wordIndex) => {
           // roll to see if we're going to attempt to replace this word
           const replacementChance = Math.round(Math.random() * 100) < +this.preferences.frequency;
 
-          // if the word is in the map and we rolled under the replacement threshold, we'll add it to the wordPairs array
-          if (this.translationMap[word] && replacementChance) {
-            wordPairs.push([word, this.translationMap[word]]);
-            eligibleWords.push(word);
+          // if the word is in the set and we rolled under the replacement threshold, we'll add it to the eligibleWords array
+          if (this.eligibleSet.has(word) && replacementChance) {
+            eligibleWords.push({
+              word,
+              wordIndex // this is so we can easily access the location of the translated word within the sentence
+            });
           }
         });
 
         // we build an object with data that gemini will need to make the translation
-        const eligibleData = {
+        const inputData = {
           eligibleWords,
-          sentence,
-          sentenceIndex: i // this is so we can find and replace the original sentence after translation
+          sentence: sentencesArr[sentenceIndex],
+          sentenceIndex // this is so we can find and replace the original sentence after translation
         } 
 
-        eligibleArr.push(eligibleData);
+        inputArr.push(inputData);
       });
 
       // remove entries for sentences with 0 translation-eligible words
-      eligibleArr = eligibleArr.filter(e => e.eligibleWords.length > 0);
+      inputArr = inputArr.filter(e => e.eligibleWords.length > 0);
 
       // limit size for testing
-      eligibleArr = eligibleArr.slice(0, 5);
+      // inputArr = inputArr.slice(0, 5);
 
-      // console.log(JSON.stringify(eligibleArr));
-  
-      const geminiData = await fetch("/translation?_method=GET", {
-        method: "post",
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(eligibleArr)
-      });
-
-      console.log(geminiData);
+      return inputArr;
     }
 
-    // translate v1
-    // async translateEligibleWords() {
-    //   const text = this.textDisplay.innerText;
-    //   const textArr = text.split(" ");
-  
-    //   const translatedArr = textArr.map(word => {
-    //     const replacementChance = Math.round(Math.random() * 100) < +this.preferences.frequency;
-  
-    //     return this.translationMap[word] && replacementChance ? `<span class="translated-word" data-key="${word}">${this.translationMap[word].kanji}</span>` : word;
-    //   });
-    //   // might need regex to deal with words with punctuation attached/ words with spaces in between
-  
-    //   this.textDisplay.innerHTML = translatedArr.join(" ");
-    // }
-  
+    filterGeminiOutput(geminiOutput) {
+      // go through the words array of each entry 
+      geminiOutput = geminiOutput.map(entry => {
+        const words = entry.words = entry.words.filter(word => {
+          const jpArr = word.japanese.split("");
+
+          // remove the word if none of its chars are within the kanjiSet
+          return jpArr.some(char => this.kanjiSet.has(char));
+        });
+
+        return {
+          ...entry,
+          words
+        }
+      });
+      
+      return geminiOutput.filter(entry => entry.words.length > 0);
+    }
+
+    swapInTranslatedSentences(sentenceWordsArr, filteredGeminiOutput) {      
+      filteredGeminiOutput.forEach(entry => {
+        const currentArr = sentenceWordsArr[entry.sentenceIndex];
+
+        entry.words.forEach(word => {
+          currentArr[word.wordIndex] = `<span class="translated-word" data-index=${this.translationReference.length}>${word.japanese}</span>`;
+          this.translationReference.push({
+            japanese: word.japanese,
+            english: word.english,
+            romaji: word.romaji
+          });
+        });
+      });
+
+      return sentenceWordsArr;
+    }
+
     returnToInput() {
       this.textType = "input";
   
@@ -274,11 +324,11 @@ class Translator {
     }
   
     populateHoverInfo(event) {
-      const key = event.target.dataset.key;
-      const entry = this.translationMap[key];
-      
-      this.infoPopup.querySelector("#english-reading").innerText = entry.heisig_en;
-      this.infoPopup.querySelector("#hiragana-reading").innerText = entry.kun_readings.join(", ");
+      const entry = this.translationReference[event.target.dataset.index];
+
+      this.infoPopup.querySelector("#japanese-reading").innerText = entry.japanese;
+      this.infoPopup.querySelector("#english-reading").innerText = entry.english;
+      this.infoPopup.querySelector("#romaji-reading").innerText = entry.romaji;
     }
   
     hideHoverInfo(event) {
@@ -292,4 +342,12 @@ class Translator {
     }
   }
   
-  new Translator();
+const translator = new Translator();
+
+let ref = translator.translationReference;
+
+// Here is some sample text to demonstrate the translation feature. If you hover over a translated <span class="translated-word" data-index="0">単語</span>, you can <span class="translated-word" data-index="1">見る</span> additional info about the <span class="translated-word" data-index="2">単語</span>. You can toggle an entry to swap it <span class="translated-word" data-index="3">切り替える</span> for the original English, or for its phonetic pronunciation.
+
+// Now for an excerpt from a popular Japanese folktale: Momotaro.
+
+// "Long ago, in a <span class="translated-word" data-index="4">小さい</span> <span class="translated-word" data-index="5">村</span> in <span class="translated-word" data-index="6">日本</span>, an <span class="translated-word" data-index="7">年老いた</span> <span class="translated-word" data-index="8">男</span> and <span class="translated-word" data-index="9">女</span> lived together by the mountains. The <span class="translated-word" data-index="10">男</span> went <span class="translated-word" data-index="11">出かける</span> <span class="translated-word" data-index="12">毎日</span> <span class="translated-word" data-index="13">日</span> to <span class="translated-word" data-index="14">切る</span> <span class="translated-word" data-index="15">草</span> and <span class="translated-word" data-index="16">集める</span> firewood, while the <span class="translated-word" data-index="17">女</span> stayed <span class="translated-word" data-index="18">家</span> to wash <span class="translated-word" data-index="19">服</span> and cook meals. Though they were kind and hardworking, they had no children, and this made them very <span class="translated-word" data-index="20">悲しい</span>.

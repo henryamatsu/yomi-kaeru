@@ -5,7 +5,7 @@ module.exports = {
     try {
       const translation = await gemini.run(req.body);
 
-      res.json(translation);
+      res.send(translation);
     } catch (err) {
       console.log(err);
     }

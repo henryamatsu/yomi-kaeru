@@ -1,0 +1,6 @@
+class HoverHandler {
+    constructor() {
+        this.translationReference = [{"japanese":"カーソルを合わせる","english":"you","romaji":"kāsoru o awaseru"},{"japanese":"単語","english":"word","romaji":"tango"},{"japanese":"見る","english":"see","romaji":"miru"},{"japanese":"単語","english":"word","romaji":"tango"},{"japanese":"代替","english":"out","romaji":"daitai"},{"japanese":"小さい","english":"small","romaji":"chiisai"},{"japanese":"村","english":"village","romaji":"mura"},{"japanese":"日本","english":"Japan","romaji":"Nihon"},{"japanese":"年老いた","english":"old","romaji":"toshioita"},{"japanese":"男","english":"man","romaji":"otoko"},{"japanese":"女","english":"woman","romaji":"onna"},{"japanese":"男","english":"man","romaji":"otoko"},{"japanese":"出かける","english":"out","romaji":"dekakeru"},{"japanese":"毎日","english":"every","romaji":"mainichi"},{"japanese":"日","english":"day","romaji":"hi"},{"japanese":"切る","english":"cut","romaji":"kiru"},{"japanese":"草","english":"grass","romaji":"kusa"},{"japanese":"集める","english":"gather","romaji":"atsumeru"},{"japanese":"女","english":"woman","romaji":"onna"},{"japanese":"家","english":"home","romaji":"ie"},{"japanese":"服","english":"clothes","romaji":"fuku"},{"japanese":"悲しい","english":"sad","romaji":"kanashii"}];
+
+    }
+}
