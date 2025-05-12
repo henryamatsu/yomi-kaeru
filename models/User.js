@@ -10,6 +10,10 @@ const UserSchema = new mongoose.Schema({
       type: Number,
       default: 50
     },
+    defaultLanguage: {
+      type: String,
+      default: "japanese"
+    },
     grades: {
       grade1: {
         type: Boolean,

@@ -38,7 +38,7 @@
       <div class="profile-row">
         <section class="preference-controls">
           <form method="post" onsubmit="return false;">
-            <!-- <input type="hidden" name="_id" value="<%= //user._id %>"> -->
+            <h2>Kanji Grades</h2>
             <label class="checkbox-row" for="grade-1">
               <span>Grade 1</span>
               <div class="form-line"></div>
@@ -54,10 +54,16 @@
               <div class="form-line"></div>
               <input id="grade-3" name="grade-3" type="checkbox" value=true <%= preferences.grades.grade3 ? "checked" : "" %>>
             </label>
-            <div class="frequency-container">
-              <label for="frequency">Replacement Frequency</label>
-              <input id="frequency" name="frequency" type="range" value=<%= preferences.frequency %>>
+            <h2>Default Language</h2>
+            <div class="default-language-container">
+              <label>Japanese <input name="default-language" type="radio" id="japanese" value="japanese" <%= preferences.defaultLanguage === "japanese" ? "checked" : "" %>/></label>
+              <label>English <input name="default-language" type="radio" id="english" value="english" <%= preferences.defaultLanguage === "english" ? "checked" : "" %> /></label>
+              <label>Romaji <input name="default-language" type="radio" id="romaji" value="romaji" <%= preferences.defaultLanguage === "romaji" ? "checked" : "" %> /></label>
             </div>
+            <!-- <div class="frequency-container"> -->
+              <h2><label for="frequency">Replacement Frequency</label></h2>
+              <input id="frequency" name="frequency" type="range" value=<%= preferences.frequency %>>
+            <!-- </div> -->
             <button id="save-button" class="primary-button">Save</button>
             <button id="translate-button">Translate</button>
             <button id="sample-text-button">Sample Text</button>
@@ -65,7 +71,7 @@
         </section>
         <section class="text-container">
           <div class="text-display" class="text-box"></div>
-          <textarea class="text-input" class="text-box" placeholder="Insert text here!" maxlength="2011"></textarea>    
+          <textarea class="text-input" class="text-box" placeholder="Insert text here!" maxlength="2011"></textarea>
         </section>
       </div>
     </div>
@@ -76,6 +82,13 @@
       <span>English: <span id="english-reading"></span></span>
       <span>Romaji: <span id="romaji-reading"></span></span>
     </div>
+  </div>
+  <div id="loading-screen">
+    <div class="img-wrapper">
+      <img src="../imgs/frog-soup-square.svg" alt="frog-icon"/>
+      <div class="img-filter"></div>
+    </div>
+    <h2>Loading...</h2>
   </div>
   <script>
     window.preferences = <%- JSON.stringify(preferences) %>;

@@ -3,10 +3,10 @@ class Translator {
       this.preferences = window.preferences;
 
       this.textType = "input";
-      this.currentWordElement = null;
 
       // this will store data for every translated word
       this.translationReference = [];
+      this.currentWordElement = null;
   
       this.setupQuerySelectors();
       this.setupEventListeners();
@@ -22,6 +22,7 @@ class Translator {
       this.textDisplay = document.querySelector(".text-display");
       this.textInput = document.querySelector(".text-input");
       this.infoPopup = document.querySelector("#info-popup");
+      this.loadingScreen = document.querySelector("#loading-screen");
     }
   
     setupEventListeners() {
@@ -31,9 +32,8 @@ class Translator {
       this.translateButton.addEventListener("click", this.handleTranslateButton.bind(this));
   
       document.addEventListener("mouseover", this.displayHoverInfo.bind(this));
-      this.infoPopup.addEventListener("mouseout", this.hideHoverInfo.bind(this));
-      this.infoPopup.addEventListener("click", this.changeReading.bind(this));
-      
+      document.addEventListener("mouseout", this.hideHoverInfo.bind(this));
+      document.addEventListener("click", this.changeReading.bind(this));
     }
 
     async createTranslationSets() {
@@ -93,6 +93,11 @@ class Translator {
         case "grade-3":
           this.preferences.grades.grade3 = value; 
           break;
+        case "japanese":
+        case "english":
+        case "romaji":
+          this.preferences.defaultLanguage = value; 
+          break;
         case "frequency":
           this.preferences.frequency = value;
           break;
@@ -113,7 +118,7 @@ class Translator {
       const res = await fetch("/json/sample-text.json");
       const data = await res.json();
 
-      this.textInput.innerText = data.text;
+      this.textInput.value = data.text;
     }
   
     handleTranslateButton() {
@@ -135,7 +140,9 @@ class Translator {
   
       this.textDisplay.innerText = this.textInput.value;
   
+      this.toggleLoadingScreenVisibility(true);
       this.textDisplay.innerHTML = await this.translateEligibleWords();
+      this.toggleLoadingScreenVisibility(false);
     }
 
     // translate v2
@@ -266,11 +273,13 @@ class Translator {
     }
 
     swapInTranslatedSentences(sentenceWordsArr, filteredGeminiOutput) {      
+      this.translationReference = [];
+
       filteredGeminiOutput.forEach(entry => {
         const currentArr = sentenceWordsArr[entry.sentenceIndex];
 
         entry.words.forEach(word => {
-          currentArr[word.wordIndex] = `<span class="translated-word" data-index=${this.translationReference.length}>${word.japanese}</span>`;
+          currentArr[word.wordIndex] = `<span class="translated-word" data-index=${this.translationReference.length} data-language=${this.preferences.defaultLanguage}>${word[this.preferences.defaultLanguage]}</span>`;
           this.translationReference.push({
             japanese: word.japanese,
             english: word.english,
@@ -307,12 +316,12 @@ class Translator {
       const yAdjust = pointerY < midPoint ? -20 : -popupHeight + 20;
   
       if (pointerY < midPoint) {
-        this.infoPopup.style.paddingTop = "40px";
-        this.infoPopup.style.paddingBottom = "0";
+        this.infoPopup.classList.add("below-midpoint");
+        this.infoPopup.classList.remove("above-midpoint");
       }
       else {
-        this.infoPopup.style.paddingTop = "0";
-        this.infoPopup.style.paddingBottom = "40px";
+        this.infoPopup.classList.add("above-midpoint");
+        this.infoPopup.classList.remove("below-midpoint");
       }
   
       const popupX = pointerX - popupWidth / 2;
@@ -329,25 +338,48 @@ class Translator {
       this.infoPopup.querySelector("#japanese-reading").innerText = entry.japanese;
       this.infoPopup.querySelector("#english-reading").innerText = entry.english;
       this.infoPopup.querySelector("#romaji-reading").innerText = entry.romaji;
+
+      this.toggleLanguageVisibility(event);
     }
   
     hideHoverInfo(event) {
-      // if (event.relatedTarget.classList.contains("popup-content")) return;
+      if (!event.target.classList.contains("translated-word")) return;
+  
       this.currentWordElement = null;
       this.infoPopup.style.visibility = "hidden";
     }
   
-    changeReading() {
-      // on clicking a translated word, this feature will change the reading to hiragana/romaji
+    changeReading(event) {
+      if (!event.target.classList.contains("translated-word")) return;
+      const index = event.target.dataset.index;
+      let language = event.target.dataset.language;
+  
+      language =
+      language === "japanese" ? "english" :
+      language === "english" ? "romaji" : "japanese";
+      
+      event.target.dataset.language = language;
+      event.target.innerText = this.translationReference[index][language];
+      this.toggleLanguageVisibility(event);
+    }
+
+    toggleLanguageVisibility(event) {
+      const language = event.target.dataset.language;
+      this.infoPopup.querySelector("#japanese-reading").parentNode.style.display = language === "japanese" ? "none" : "unset";
+      this.infoPopup.querySelector("#english-reading").parentNode.style.display = language === "english" ? "none" : "unset";
+      this.infoPopup.querySelector("#romaji-reading").parentNode.style.display = language === "romaji" ? "none" : "unset";
+    }
+    
+    toggleLoadingScreenVisibility(isLoading) {
+      if (isLoading) {
+        this.loadingScreen.classList.add("visible");
+      }
+      else {
+        this.loadingScreen.classList.remove("visible");
+      }
     }
   }
   
 const translator = new Translator();
 
 let ref = translator.translationReference;
-
-// Here is some sample text to demonstrate the translation feature. If you hover over a translated <span class="translated-word" data-index="0">単語</span>, you can <span class="translated-word" data-index="1">見る</span> additional info about the <span class="translated-word" data-index="2">単語</span>. You can toggle an entry to swap it <span class="translated-word" data-index="3">切り替える</span> for the original English, or for its phonetic pronunciation.
-
-// Now for an excerpt from a popular Japanese folktale: Momotaro.
-
-// "Long ago, in a <span class="translated-word" data-index="4">小さい</span> <span class="translated-word" data-index="5">村</span> in <span class="translated-word" data-index="6">日本</span>, an <span class="translated-word" data-index="7">年老いた</span> <span class="translated-word" data-index="8">男</span> and <span class="translated-word" data-index="9">女</span> lived together by the mountains. The <span class="translated-word" data-index="10">男</span> went <span class="translated-word" data-index="11">出かける</span> <span class="translated-word" data-index="12">毎日</span> <span class="translated-word" data-index="13">日</span> to <span class="translated-word" data-index="14">切る</span> <span class="translated-word" data-index="15">草</span> and <span class="translated-word" data-index="16">集める</span> firewood, while the <span class="translated-word" data-index="17">女</span> stayed <span class="translated-word" data-index="18">家</span> to wash <span class="translated-word" data-index="19">服</span> and cook meals. Though they were kind and hardworking, they had no children, and this made them very <span class="translated-word" data-index="20">悲しい</span>.

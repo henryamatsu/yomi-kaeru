@@ -1,8 +1,12 @@
 # MVP Development
-- aesthetic popup
-- loading icon
-- swapping between japanese, english, romaji
-- popup windows on homescreen
+- √ aesthetic popup
+- √ clear translationReference when doing new translation
+- √ create a user preference for default translation language
+- √ let user pick default language in preference panel
+- √ make it so the current language doesn't display in popup
+- √ loading icon
+- √ swapping between japanese, english, romaji
+- √ popup windows on homescreen
 - BROWSER EXTENSION
 - move JSON data to database so it's easier to access from browser extension?
 - download button?
