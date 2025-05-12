@@ -23,15 +23,12 @@ class HoverHandler {
     this.currentWordElement = event.target;
     this.populateHoverInfo(event);
 
-    const pointerX = event.clientX;
-    const pointerY = event.clientY;
-    const popupWidth = this.infoPopup.offsetWidth;
-    const popupHeight = this.infoPopup.offsetHeight;
-    
     const clientHeight = document.documentElement.clientHeight;
     const midPoint = clientHeight / 2;
-    const yAdjust = pointerY < midPoint ? -20 : -popupHeight + 20;
 
+    const pointerX = event.clientX;
+    const pointerY = event.clientY;
+    
     if (pointerY < midPoint) {
       this.infoPopup.classList.add("below-midpoint");
       this.infoPopup.classList.remove("above-midpoint");
@@ -40,6 +37,11 @@ class HoverHandler {
       this.infoPopup.classList.add("above-midpoint");
       this.infoPopup.classList.remove("below-midpoint");
     }
+    
+    const popupWidth = this.infoPopup.offsetWidth;
+    const popupHeight = this.infoPopup.offsetHeight;
+    
+    const yAdjust = pointerY < midPoint ? -20 : -popupHeight + 20;
 
     const popupX = pointerX - popupWidth / 2;
     const popupY = pointerY + yAdjust;

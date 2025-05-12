@@ -11,7 +11,9 @@ class Translator {
       this.setupQuerySelectors();
       this.setupEventListeners();
 
-      this.createTranslationSets();
+      (async () => {
+        await this.createTranslationSets();
+      })();
     }
   
     setupQuerySelectors() {
@@ -151,7 +153,7 @@ class Translator {
       // in theory, this design should be pretty easy to port over to translating multiple text elements
       // maybe for multiple elements, this method will be called for each individual method? Or
       // we should amass the text so we can make one call to gemini api
-      this.createTranslationSets();
+      await this.createTranslationSets();
 
       const text = this.textDisplay.innerText;
 
@@ -160,7 +162,8 @@ class Translator {
     
       const geminiInput = this.createGeminiInput(sentencesArr, sentenceWordsArr);
   
-      console.log("gemini starting!");
+      const startTime = new Date();
+      console.log("gemini starting...");
 
       const geminiRes = await fetch("/translation?_method=GET", {
         method: "post",
@@ -168,21 +171,11 @@ class Translator {
         body: JSON.stringify(geminiInput)
       });
 
-      console.log("gemini done!");
+      const endTime = new Date();
+      console.log(`gemini finished after: ${(endTime - startTime)/ 1000} seconds`);
 
       const geminiOutput = await geminiRes.json();
-
-      // checking to see if filtering is working
-      // console.log("unfiltered");
-      // console.log(geminiOutput);
-      // console.log("unfiltered length: ", geminiOutput.length);
-
       const filteredGeminiOutput = this.filterGeminiOutput(geminiOutput);
-
-      // console.log("filtered");
-      // console.log(filteredGeminiOutput);
-      // console.log("filtered length: ", filteredGeminiOutput.length);
-
 
       const newSentenceWordsArr = this.swapInTranslatedSentences(sentenceWordsArr, filteredGeminiOutput);
       const newSentencesArr = newSentenceWordsArr.map(arr => arr.join(""));
@@ -310,16 +303,13 @@ class Translator {
     
       this.currentWordElement = event.target;
       this.populateHoverInfo(event);
-  
-      const pointerX = event.clientX;
-      const pointerY = event.clientY;
-      const popupWidth = this.infoPopup.offsetWidth;
-      const popupHeight = this.infoPopup.offsetHeight;
-   
+
       const clientHeight = document.documentElement.clientHeight;
       const midPoint = clientHeight / 2;
-      const yAdjust = pointerY < midPoint ? -20 : -popupHeight + 20;
-  
+
+      const pointerX = event.clientX;
+      const pointerY = event.clientY;
+      
       if (pointerY < midPoint) {
         this.infoPopup.classList.add("below-midpoint");
         this.infoPopup.classList.remove("above-midpoint");
@@ -328,10 +318,15 @@ class Translator {
         this.infoPopup.classList.add("above-midpoint");
         this.infoPopup.classList.remove("below-midpoint");
       }
-  
+      
+      const popupWidth = this.infoPopup.offsetWidth;
+      const popupHeight = this.infoPopup.offsetHeight;
+      
+      const yAdjust = pointerY < midPoint ? -20 : -popupHeight + 20;
+
       const popupX = pointerX - popupWidth / 2;
       const popupY = pointerY + yAdjust;
-  
+
       this.infoPopup.style.visibility = "visible";
       this.infoPopup.style.left = popupX + "px";
       this.infoPopup.style.top = popupY + "px";
