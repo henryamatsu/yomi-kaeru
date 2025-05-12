@@ -40,7 +40,7 @@ class Translator {
       const grades = this.preferences.grades;
       const newEligibleSet = new Set();
       const newKanjiSet = new Set();
-      
+
       if (grades.grade1) {
         const eligibleRes = await fetch("/json/eligible1.json");
         const eligibleData = await eligibleRes.json();
@@ -79,19 +79,20 @@ class Translator {
     handlePrefenceInput(event) {
       let value = event.target.value;
       if (value === undefined || value === "") return;
-      value = value === "true" ? true : value === "false" ? false : value;
 
+      value = value === "true" ? true : value === "false" ? false : value;
+      const checked = event.target.checked;
       const id = event.target.id;
 
       switch (id) {
         case "grade-1":
-          this.preferences.grades.grade1 = value; 
+          this.preferences.grades.grade1 = checked; 
           break;
         case "grade-2":
-          this.preferences.grades.grade2 = value; 
+          this.preferences.grades.grade2 = checked; 
           break;
         case "grade-3":
-          this.preferences.grades.grade3 = value; 
+          this.preferences.grades.grade3 = checked; 
           break;
         case "japanese":
         case "english":
@@ -150,20 +151,24 @@ class Translator {
       // in theory, this design should be pretty easy to port over to translating multiple text elements
       // maybe for multiple elements, this method will be called for each individual method? Or
       // we should amass the text so we can make one call to gemini api
+      this.createTranslationSets();
+
       const text = this.textDisplay.innerText;
 
       const sentencesArr = this.createSentencesArr(text);
       const sentenceWordsArr = this.createSentenceWordsArr(sentencesArr);
     
       const geminiInput = this.createGeminiInput(sentencesArr, sentenceWordsArr);
-
-      // console.log(JSON.stringify(geminiInput));
   
+      console.log("gemini starting!");
+
       const geminiRes = await fetch("/translation?_method=GET", {
         method: "post",
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(geminiInput)
       });
+
+      console.log("gemini done!");
 
       const geminiOutput = await geminiRes.json();
 
