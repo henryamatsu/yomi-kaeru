@@ -4,7 +4,7 @@ Yomi-kaeru is an app and browser extension that can scan through text on a webpa
 
 ![yomi-kaeru-landing-page](https://github.com/user-attachments/assets/5390afc0-1c12-4b29-9b70-5a09cf543b56)
 
-![yomi-kaeru-profile-page](https://github.com/user-attachments/assets/824e8b4b-e34e-43d0-a78c-f9f7654216cd)
+![yomi-kaeru-profile-page](https://github.com/user-attachments/assets/a6b70114-e5b1-4db6-a079-d36c8b5cd098)
 
 *Screenshots of the landing page and user profile page*
 
