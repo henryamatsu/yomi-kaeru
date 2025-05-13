@@ -151,17 +151,22 @@ class Translator {
     // translate v2
     async translateEligibleWords() {
       // in theory, this design should be pretty easy to port over to translating multiple text elements
-      // maybe for multiple elements, this method will be called for each individual method? Or
+      // maybe for multiple elements, this method will be called for each individual element? Or
       // we should amass the text so we can make one call to gemini api
       await this.createTranslationSets();
 
       const text = this.textDisplay.innerText;
+      const purifiedText = DOMPurify.sanitize(text);
 
-      const sentencesArr = this.createSentencesArr(text);
+      const sentencesArr = this.createSentencesArr(purifiedText);
       const sentenceWordsArr = this.createSentenceWordsArr(sentencesArr);
     
       const geminiInput = this.createGeminiInput(sentencesArr, sentenceWordsArr);
-  
+
+      if (geminiInput.length === 0) {
+        return "<h2>Nothing to translate!</h2>";
+      }
+
       const startTime = new Date();
       console.log("gemini starting...");
 
@@ -176,6 +181,10 @@ class Translator {
 
       const geminiOutput = await geminiRes.json();
       const filteredGeminiOutput = this.filterGeminiOutput(geminiOutput);
+  
+      if (filteredGeminiOutput.length === 0) {
+        return "<h2>Nothing to translate!</h2>";
+      } 
 
       const newSentenceWordsArr = this.swapInTranslatedSentences(sentenceWordsArr, filteredGeminiOutput);
       const newSentencesArr = newSentenceWordsArr.map(arr => arr.join(""));
