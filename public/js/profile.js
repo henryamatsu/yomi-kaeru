@@ -141,7 +141,7 @@ class Translator {
       this.textInput.style = "display: none;"
       this.sampleTextButton.style = "display: none;"
   
-      this.textDisplay.innerText = this.textInput.value;
+      this.textDisplay.innerText = this.textInput.value; // we don't have to purify here since we're using innerText
   
       this.toggleLoadingScreenVisibility(true);
       this.textDisplay.innerHTML = await this.translateEligibleWords();

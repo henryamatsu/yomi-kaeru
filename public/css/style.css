@@ -263,14 +263,14 @@ form button {
 
 .frog-down #left-leg,
 .frog-down #right-leg,
-.frog-row:hover #left-leg,
-.frog-row:hover #right-leg {
+.frog-svg:hover #left-leg,
+.frog-svg:hover #right-leg {
     transform: rotate(0);
     transition: transform .5s;
 }
 
 .frog-down #body,
-.frog-row:hover #body {
+.frog-svg:hover #body {
     transform: translate(0,0);
     transition: transform .5s;
 }
