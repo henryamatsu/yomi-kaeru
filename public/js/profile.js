@@ -150,9 +150,6 @@ class Translator {
 
     // translate v2
     async translateEligibleWords() {
-      // in theory, this design should be pretty easy to port over to translating multiple text elements
-      // maybe for multiple elements, this method will be called for each individual element? Or
-      // we should amass the text so we can make one call to gemini api
       await this.createTranslationSets();
 
       const text = this.textDisplay.innerText;

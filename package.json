@@ -1,7 +1,7 @@
 {
-  "name": "binary-upload-boom",
+  "name": "yomi-kaeru",
   "version": "1.0.0",
-  "description": "RC Social Network",
+  "description": "Japanese Learning App",
   "main": "server.js",
   "scripts": {
     "start": "node server.js --watch",
@@ -12,7 +12,6 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "bcrypt": "^5.0.1",
-    "cloudinary": "^1.25.1",
     "connect-mongo": "^3.2.0",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.6",
@@ -23,7 +22,6 @@
     "mongodb": "^3.6.5",
     "mongoose": "^8.8.3",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "validator": "^13.6.0"
